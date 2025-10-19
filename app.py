@@ -73,6 +73,40 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.subheader("1) Compras (facturas)")
+# ---- RECUADRO PRINCIPAL PARA SUBIR FACTURAS ----
+st.markdown("""
+<div style="border:1px dashed #2e3447; border-radius:12px; padding:14px; margin-bottom:12px;">
+  📦 <b>Sube aquí tus facturas o tickets de compra</b><br>
+  - Acepta: PDF, JPG o PNG.<br>
+  - En iPhone: usa “Compartir → Imprimir → pellizca → Guardar en Archivos (PDF)”.<br>
+  - También puedes tomar una foto directamente desde el móvil.
+</div>
+""", unsafe_allow_html=True)
+
+# Cuadro de subida grande y visible
+up = st.file_uploader(
+    "📤 Sube facturas (PDF/JPG/PNG)",
+    type=["pdf", "jpg", "jpeg", "png"],
+    accept_multiple_files=True,
+    label_visibility="visible",
+    key="facturas_uploader"
+)
+
+# Opción cámara (solo en móviles)
+cam = st.camera_input("📸 O toma una foto de la factura", key="camara_factura")
+if cam is not None:
+    # Añadir la foto como un archivo más
+    up = list(up) if up else []
+    up.append(cam)
+
+# Si hay archivos, los mostramos en lista
+if up:
+    st.markdown("### 🧾 Facturas subidas")
+    for f in up:
+        st.write(f"**{f.name}** listo para procesar.")
+else:
+    st.info("👉 Pulsa el cuadro azul para seleccionar o tomar una factura.")
+
 ing = st.data_editor(
     ing,                 # tu DataFrame de ingredientes/mermas
     num_rows='dynamic',
