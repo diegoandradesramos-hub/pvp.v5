@@ -12,13 +12,49 @@ def load_settings():
 SET=load_settings(); currency=SET.get('currency_symbol','€')
 ing=load_csv('ingredient_yields.csv'); cm=load_csv('category_margins.csv'); rec=load_csv('recipes.csv'); rlines=load_csv('recipe_lines.csv'); pur=load_csv('purchases.csv')
 st.title('PVP La Terraza V5 (Completa)')
+# --- MÁRGENES POR SECCIÓN (sidebar) ---
 with st.sidebar:
- st.header('Márgenes por sección'); cm=st.data_editor(cm, num_rows='dynamic', use_container_width=True, key='cm'); st.session_state['cm']=cm
-st.subheader('Ingredientes (mermas)'); ing=st.data_editor(ing, num_rows='dynamic', use_container_width=True); ing.to_csv(os.path.join(DATA_DIR,'ingredient_yields.csv'),index=False)
-st.subheader('Carta'); st.dataframe(rec[["category","display_name","iva_rate"]].rename(columns={"category":"Sección","display_name":"Producto","iva_rate":"IVA"}),use_container_width=True)
-# helper
+    st.header('Márgenes por sección')
+    # Editor con otra clave para evitar conflictos
+    cm = st.data_editor(
+        cm,              # tu DataFrame de márgenes cargado
+        num_rows='dynamic',
+        use_container_width=True,
+        key='cm_editor'
+    )
+    # Guardado inmediato en el CSV (sin session_state)
+    cm.to_csv(
+        os.path.join(DATA_DIR, 'category_margins.csv'),
+        index=False, encoding='utf-8'
+    )
+    st.caption('✅ Márgenes guardados (auto).')
+
+# --- INGREDIENTES (mermas) ---
+st.subheader('Ingredientes (mermas)')
+ing = st.data_editor(
+    ing,                 # tu DataFrame de ingredientes/mermas
+    num_rows='dynamic',
+    use_container_width=True,
+    key='ing_editor'
+)
+ing.to_csv(
+    os.path.join(DATA_DIR, 'ingredient_yields.csv'),
+    index=False, encoding='utf-8'
+)
+st.caption('✅ Mermas guardadas.')
+
+# --- CARTA ---
+st.subheader('Carta')
+st.dataframe(
+    rec[["category","display_name","iva_rate"]]
+      .rename(columns={"category":"Sección","display_name":"Producto","iva_rate":"IVA"}),
+    use_container_width=True
+)
+
+# --- AVISO SI NO HAY COMPRAS ---
 if pur.empty:
- st.info('Sube una factura PDF con la versión con estilo (parche).');
+    st.info('Sube una factura PDF para calcular PVP (mejor PDF con texto).')
+
 else:
  pur['unit_cost_net']=pur['total_cost_gross']/(1.0+pur['iva_rate'].fillna(0.10))/pur['qty'].replace(0,np.nan)
  pur['_k_ing']=pur['ingredient'].str.strip().str.lower().str.replace(r'\s+',' ',regex=True); pur['_k_unit']=pur['unit'].str.strip().str.lower()
