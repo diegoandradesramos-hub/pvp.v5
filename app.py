@@ -30,7 +30,18 @@ with st.sidebar:
     st.caption('✅ Márgenes guardados (auto).')
 
 # --- INGREDIENTES (mermas) ---
-st.subheader('Ingredientes (mermas)')
+# --- BOTÓN DE ACCESO RÁPIDO ---
+st.markdown("""
+<div style='position:fixed; bottom:20px; right:20px;'>
+  <a href='#compras' style='text-decoration:none;'>
+    <button style='background:#ff6b35;color:white;border:none;border-radius:50px;padding:12px 20px;font-weight:bold;box-shadow:0 3px 6px rgba(0,0,0,.2);'>
+      📤 Subir factura
+    </button>
+  </a>
+</div>
+""", unsafe_allow_html=True)
+st.markdown("<a id='compras'></a>", unsafe_allow_html=True)
+st.subheader("1) Compras (facturas)")
 ing = st.data_editor(
     ing,                 # tu DataFrame de ingredientes/mermas
     num_rows='dynamic',
