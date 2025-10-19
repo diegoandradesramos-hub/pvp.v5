@@ -41,6 +41,37 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 st.markdown("<a id='compras'></a>", unsafe_allow_html=True)
+# --- BOTÓN DORADO FLOTANTE "SUBIR FACTURA" ---
+st.markdown("""
+<style>
+#subirfactura {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, #d4af37, #f8e58c);
+  color: #1b1b1b;
+  border: none;
+  border-radius: 40px;
+  padding: 12px 22px;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  cursor: pointer;
+  transition: all .3s ease;
+  z-index: 9999;
+}
+#subirfactura:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(212,175,55,.5);
+  background: linear-gradient(135deg, #f9e79f, #d4af37);
+}
+</style>
+
+<a href="#compras">
+  <button id="subirfactura">📤 Subir factura</button>
+</a>
+""", unsafe_allow_html=True)
+
 st.subheader("1) Compras (facturas)")
 ing = st.data_editor(
     ing,                 # tu DataFrame de ingredientes/mermas
