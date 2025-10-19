@@ -104,6 +104,60 @@ if up:
     st.markdown("### 🧾 Facturas subidas")
     for f in up:
         st.write(f"**{f.name}** listo para procesar.")
+     # --- PROCESAMIENTO DE CADA FACTURA ---
+for f in up:
+    st.markdown(f"### 🧾 Procesar {f.name}")
+
+    iva_rate = 0.10
+    parsed = pd.DataFrame()
+
+    # Si es PDF, intentamos leerlo automáticamente
+    if f.name.lower().endswith(".pdf") and PARSER_OK:
+        try:
+            parsed = parse_invoice_bytes(f.read())
+        except Exception as e:
+            st.warning(f"No se pudo leer automáticamente {f.name}: {e}")
+
+    # Campos básicos
+    col1, col2, col3 = st.columns(3)
+    supplier = col1.text_input("Proveedor", "", key=f"supplier_{f.name}")
+    date = col2.text_input("Fecha (DD/MM/AAAA)", "", key=f"date_{f.name}")
+    invoice_no = col3.text_input("Nº factura", "", key=f"invoice_{f.name}")
+    iva_rate = st.number_input("IVA aplicado", 0.0, 0.30, float(iva_rate), 0.01, key=f"iva_{f.name}")
+
+    if not parsed.empty:
+        st.caption("Líneas detectadas automáticamente (puedes editar):")
+        parsed = st.data_editor(parsed, use_container_width=True, key=f"parsed_{f.name}")
+
+        if st.button(f"✅ Guardar {len(parsed)} líneas", key=f"save_{f.name}"):
+            new_rows = []
+            for _, r in parsed.iterrows():
+                new_rows.append({
+                    "date": date, "supplier": supplier, "ingredient": r["ingredient"],
+                    "qty": float(r["qty"]), "unit": r["unit"],
+                    "total_cost_gross": float(r["total_cost_gross"]),
+                    "iva_rate": iva_rate, "invoice_no": invoice_no, "notes": ""
+                })
+            if new_rows:
+                purchases = pd.concat([purchases, pd.DataFrame(new_rows)], ignore_index=True)
+                purchases.to_csv(os.path.join(DATA_DIR, "purchases.csv"), index=False, encoding="utf-8")
+                st.success(f"Guardadas {len(new_rows)} líneas de {f.name}.")
+                st.rerun()
+    else:
+        st.caption("No se detectó texto. Añade manualmente una línea:")
+        ingr = st.text_input("Ingrediente", key=f"ingr_{f.name}")
+        qty = st.number_input("Cantidad", 0.0, 1e6, 1.0, 0.1, key=f"qty_{f.name}")
+        unit = st.text_input("Unidad (kg, L, unit)", "kg", key=f"unit_{f.name}")
+        total = st.number_input("Total con IVA (€)", 0.0, 1e6, 0.0, 0.1, key=f"total_{f.name}")
+        if st.button("✅ Guardar línea", key=f"add_{f.name}"):
+            purchases = pd.concat([purchases, pd.DataFrame([{
+                "date": date, "supplier": supplier, "ingredient": ingr, "qty": qty, "unit": unit,
+                "total_cost_gross": total, "iva_rate": iva_rate, "invoice_no": invoice_no, "notes": ""
+            }])], ignore_index=True)
+            purchases.to_csv(os.path.join(DATA_DIR, "purchases.csv"), index=False, encoding="utf-8")
+            st.success("Línea añadida.")
+            st.rerun()
+
 else:
     st.info("👉 Pulsa el cuadro azul para seleccionar o tomar una factura.")
 
